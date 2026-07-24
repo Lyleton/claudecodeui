@@ -255,7 +255,10 @@ async function queryQoderSDK(command, options = {}, ws) {
     }
 
     sdkOptions.canUseTool = async (toolName, input, context) => {
-      if (sdkOptions.permissionMode === 'bypassPermissions') {
+      if (sdkOptions.permissionMode === 'bypassPermissions'
+        || sdkOptions.permissionMode === 'auto'
+        || !sdkOptions.permissionMode
+        || sdkOptions.permissionMode === 'default') {
         return { behavior: 'allow', updatedInput: input };
       }
 
