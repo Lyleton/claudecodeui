@@ -46,6 +46,7 @@ interface UseChatComposerStateArgs {
   codexModel: string;
   currentProviderEffort: string;
   opencodeModel: string;
+  qoderModel: string;
   isLoading: boolean;
   canAbortSession: boolean;
   tokenBudget: Record<string, unknown> | null;
@@ -198,6 +199,7 @@ export function useChatComposerState({
   codexModel,
   currentProviderEffort,
   opencodeModel,
+  qoderModel,
   isLoading,
   canAbortSession,
   tokenBudget,
@@ -375,7 +377,9 @@ export function useChatComposerState({
               ? codexModel
               : provider === 'opencode'
                   ? opencodeModel
-                  : claudeModel,
+                  : provider === 'qoder'
+                    ? qoderModel
+                    : claudeModel,
           tokenUsage: tokenBudget,
         };
 
@@ -429,6 +433,7 @@ export function useChatComposerState({
       currentSessionId,
       cursorModel,
       opencodeModel,
+      qoderModel,
       handleBuiltInCommand,
       handleCustomCommand,
       input,

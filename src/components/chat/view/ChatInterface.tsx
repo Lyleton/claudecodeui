@@ -73,6 +73,8 @@ function ChatInterface({
     currentProviderEffortOptions,
     opencodeModel,
     setOpenCodeModel,
+    qoderModel,
+    setQoderModel,
     permissionMode,
     pendingPermissionRequests,
     setPendingPermissionRequests,
@@ -203,6 +205,7 @@ function ChatInterface({
     codexModel,
     currentProviderEffort,
     opencodeModel,
+    qoderModel,
     isLoading: isProcessing,
     canAbortSession,
     tokenBudget,
@@ -339,6 +342,8 @@ function ChatInterface({
           setCodexModel={setCodexModel}
           opencodeModel={opencodeModel}
           setOpenCodeModel={setOpenCodeModel}
+          qoderModel={qoderModel}
+          setQoderModel={setQoderModel}
           providerModelCatalog={providerModelCatalog}
           providerModelsLoading={providerModelsLoading}
           tasksEnabled={tasksEnabled}
