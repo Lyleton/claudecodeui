@@ -344,6 +344,9 @@ async function queryQoderSDK(command, options = {}, ws) {
       addSession(capturedSessionId, queryInstance, ws);
     }
 
+    let thinkingBuffer = '';
+    let isThinking = false;
+
     for await (const message of queryInstance) {
       if (message.type === 'system' && message.subtype === 'init' && message.session_id && !capturedSessionId) {
         capturedSessionId = message.session_id;
@@ -365,6 +368,26 @@ async function queryQoderSDK(command, options = {}, ws) {
       }
 
       const sid = capturedSessionId || sessionId || null;
+
+      // Accumulate thinking deltas into a single block
+      if (message.type === 'stream_event' && message.event?.delta?.type === 'thinking_delta') {
+        thinkingBuffer += message.event.delta.thinking || '';
+        isThinking = true;
+        continue;
+      }
+
+      // Flush accumulated thinking when a non-thinking event arrives
+      if (isThinking && thinkingBuffer) {
+        ws.send(createNormalizedMessage({
+          kind: 'thinking',
+          content: thinkingBuffer,
+          sessionId: sid,
+          provider: 'qoder',
+        }));
+        thinkingBuffer = '';
+        isThinking = false;
+      }
+
       const normalized = sessionsService.normalizeMessage('qoder', message, sid);
       for (const msg of normalized) {
         ws.send(msg);
