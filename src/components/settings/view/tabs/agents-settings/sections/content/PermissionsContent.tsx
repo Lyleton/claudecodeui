@@ -49,8 +49,8 @@ const removeValue = (items: string[], value: string): string[] => (
   items.filter((item) => item !== value)
 );
 
-type ClaudePermissionsProps = {
-  agent: 'claude';
+type ToolPermissionsProps = {
+  agent: 'claude' | 'qoder';
   skipPermissions: boolean;
   onSkipPermissionsChange: (value: boolean) => void;
   allowedTools: string[];
@@ -59,14 +59,15 @@ type ClaudePermissionsProps = {
   onDisallowedToolsChange: (value: string[]) => void;
 };
 
-function ClaudePermissions({
+function ToolPermissions({
+  agent,
   skipPermissions,
   onSkipPermissionsChange,
   allowedTools,
   onAllowedToolsChange,
   disallowedTools,
   onDisallowedToolsChange,
-}: Omit<ClaudePermissionsProps, 'agent'>) {
+}: ToolPermissionsProps) {
   const { t } = useTranslation('settings');
   const [newAllowedTool, setNewAllowedTool] = useState('');
   const [newDisallowedTool, setNewDisallowedTool] = useState('');
@@ -111,7 +112,7 @@ function ClaudePermissions({
                 {t('permissions.skipPermissions.label')}
               </div>
               <div className="text-sm text-orange-700 dark:text-orange-300">
-                {t('permissions.skipPermissions.claudeDescription')}
+                {t(`permissions.skipPermissions.${agent}Description`)}
               </div>
             </div>
           </label>
@@ -579,16 +580,16 @@ function CodexPermissions({ permissionMode, onPermissionModeChange }: Omit<Codex
   );
 }
 
-type PermissionsContentProps = ClaudePermissionsProps | CursorPermissionsProps | CodexPermissionsProps;
+type PermissionsContentProps = ToolPermissionsProps | CursorPermissionsProps | CodexPermissionsProps;
 
 export default function PermissionsContent(props: PermissionsContentProps) {
-  if (props.agent === 'claude') {
-    return <ClaudePermissions {...props} />;
-  }
-
   if (props.agent === 'cursor') {
     return <CursorPermissions {...props} />;
   }
 
-  return <CodexPermissions {...props} />;
+  if (props.agent === 'codex') {
+    return <CodexPermissions {...props} />;
+  }
+
+  return <ToolPermissions {...props} />;
 }

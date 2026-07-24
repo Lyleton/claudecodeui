@@ -140,8 +140,38 @@ async function loadQoderMcpConfig(cwd) {
   }
 }
 
+function matchesToolPermission(entry, toolName, input) {
+  if (!entry || !toolName) {
+    return false;
+  }
+
+  if (entry === toolName) {
+    return true;
+  }
+
+  const bashMatch = entry.match(/^Bash\((.+):\*\)$/);
+  if (toolName === 'Bash' && bashMatch) {
+    const allowedPrefix = bashMatch[1];
+    let command = '';
+
+    if (typeof input === 'string') {
+      command = input.trim();
+    } else if (input && typeof input === 'object' && typeof input.command === 'string') {
+      command = input.command.trim();
+    }
+
+    if (!command) {
+      return false;
+    }
+
+    return command.startsWith(allowedPrefix);
+  }
+
+  return false;
+}
+
 function mapOptionsToQoderSDK(options = {}) {
-  const { sessionId, cwd, permissionMode, model, effort } = options;
+  const { sessionId, cwd, permissionMode, model, effort, toolsSettings, skipPermissions } = options;
 
   const sdkOptions = {
     auth: resolveQoderAuth(),
@@ -159,6 +189,14 @@ function mapOptionsToQoderSDK(options = {}) {
   if (permissionMode && permissionMode !== 'default') {
     sdkOptions.permissionMode = permissionMode;
   }
+
+  const settings = toolsSettings || { allowedTools: [], disallowedTools: [], skipPermissions: false };
+  if ((skipPermissions || settings.skipPermissions) && sdkOptions.permissionMode !== 'plan') {
+    sdkOptions.permissionMode = 'bypassPermissions';
+  }
+
+  sdkOptions.allowedTools = [...(settings.allowedTools || [])];
+  sdkOptions.disallowedTools = settings.disallowedTools || [];
 
   if (sessionId) {
     sdkOptions.resume = sessionId;
@@ -275,8 +313,25 @@ async function queryQoderSDK(command, options = {}, ws) {
     }
 
     sdkOptions.canUseTool = async (toolName, input, context) => {
-      if (sdkOptions.permissionMode === 'bypassPermissions'
-        || sdkOptions.permissionMode === 'auto'
+      if (sdkOptions.permissionMode === 'bypassPermissions') {
+        return { behavior: 'allow', updatedInput: input };
+      }
+
+      const isDisallowed = (sdkOptions.disallowedTools || []).some((entry) =>
+        matchesToolPermission(entry, toolName, input)
+      );
+      if (isDisallowed) {
+        return { behavior: 'deny', message: 'Tool disallowed by settings' };
+      }
+
+      const isAllowed = (sdkOptions.allowedTools || []).some((entry) =>
+        matchesToolPermission(entry, toolName, input)
+      );
+      if (isAllowed) {
+        return { behavior: 'allow', updatedInput: input };
+      }
+
+      if (sdkOptions.permissionMode === 'auto'
         || !sdkOptions.permissionMode
         || sdkOptions.permissionMode === 'default') {
         return { behavior: 'allow', updatedInput: input };

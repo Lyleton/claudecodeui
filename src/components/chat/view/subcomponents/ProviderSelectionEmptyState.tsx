@@ -328,6 +328,10 @@ export default function ProviderSelectionEmptyState({
                   model: opencodeModel,
                   defaultValue: "Ready with OpenCode {{model}}",
                 }),
+                qoder: t("providerSelection.readyPrompt.qoder", {
+                  model: qoderModel,
+                  defaultValue: "Ready with Qoder {{model}}",
+                }),
               }[provider]
             }
           </p>

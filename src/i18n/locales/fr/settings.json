@@ -343,7 +343,8 @@
     "skipPermissions": {
       "label": "Ignorer les invites de permission (à utiliser avec précaution)",
       "claudeDescription": "Équivalent au flag --dangerously-skip-permissions",
-      "cursorDescription": "Équivalent au flag -f dans le CLI Cursor"
+      "cursorDescription": "Équivalent au flag -f dans le CLI Cursor",
+      "qoderDescription": "Approuver automatiquement tous les appels d'outils sans invite"
     },
     "allowedTools": {
       "title": "Outils autorisés",

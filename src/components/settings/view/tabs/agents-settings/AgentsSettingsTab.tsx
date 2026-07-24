@@ -14,6 +14,8 @@ export default function AgentsSettingsTab({
   onClaudePermissionsChange,
   cursorPermissions,
   onCursorPermissionsChange,
+  qoderPermissions,
+  onQoderPermissionsChange,
   codexPermissionMode,
   onCodexPermissionModeChange,
   projects,
@@ -23,9 +25,7 @@ export default function AgentsSettingsTab({
   const visibleCategories = useMemo<AgentCategory[]>(() => (
     selectedAgent === 'opencode'
       ? ['account', 'permissions', 'mcp']
-      : selectedAgent === 'qoder'
-        ? ['account', 'mcp', 'skills']
-        : ['account', 'permissions', 'mcp', 'skills']
+      : ['account', 'permissions', 'mcp', 'skills']
   ), [selectedAgent]);
 
   const visibleAgents = useMemo<AgentProvider[]>(() => {
@@ -93,6 +93,8 @@ export default function AgentsSettingsTab({
           onClaudePermissionsChange={onClaudePermissionsChange}
           cursorPermissions={cursorPermissions}
           onCursorPermissionsChange={onCursorPermissionsChange}
+          qoderPermissions={qoderPermissions}
+          onQoderPermissionsChange={onQoderPermissionsChange}
           codexPermissionMode={codexPermissionMode}
           onCodexPermissionModeChange={onCodexPermissionModeChange}
           projects={projects}

@@ -25,6 +25,12 @@ export type ClaudePermissionsState = {
   skipPermissions: boolean;
 };
 
+export type QoderPermissionsState = {
+  allowedTools: string[];
+  disallowedTools: string[];
+  skipPermissions: boolean;
+};
+
 export type NotificationPreferencesState = {
   channels: {
     inApp: boolean;
@@ -56,6 +62,7 @@ export type SettingsStoragePayload = {
   claude: ClaudePermissionsState & { projectSortOrder: ProjectSortOrder; lastUpdated: string };
   cursor: CursorPermissionsState & { lastUpdated: string };
   codex: { permissionMode: CodexPermissionMode; lastUpdated: string };
+  qoder: QoderPermissionsState & { lastUpdated: string };
 };
 
 export type SettingsProps = {
