@@ -441,16 +441,12 @@ export default function ChatComposer({
 
             <Tooltip
               content={
-                <span className="flex items-center gap-1.5">
-                  <span className="font-semibold">
-                    {permissionMode === 'default' && t('codex.modes.default')}
-                    {permissionMode === 'acceptEdits' && t('codex.modes.acceptEdits')}
-                    {permissionMode === 'auto' && t('codex.modes.auto')}
-                    {permissionMode === 'bypassPermissions' && t('codex.modes.bypassPermissions')}
-                    {permissionMode === 'plan' && t('codex.modes.plan')}
-                  </span>
-                  <span className="opacity-70">·</span>
-                  <span>{t('input.clickToChangeMode')}</span>
+                <span>
+                  {permissionMode === 'default' && t('codex.modes.default')}
+                  {permissionMode === 'acceptEdits' && t('codex.modes.acceptEdits')}
+                  {permissionMode === 'auto' && t('codex.modes.auto')}
+                  {permissionMode === 'bypassPermissions' && t('codex.modes.bypassPermissions')}
+                  {permissionMode === 'plan' && t('codex.modes.plan')}
                 </span>
               }
               position="top"
