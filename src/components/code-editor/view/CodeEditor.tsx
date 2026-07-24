@@ -142,10 +142,19 @@ export default function CodeEditor({
     [file, isExpanded, isSidebar, onPopOut, onToggleExpand, showDiff, t],
   );
 
+  const fontSizeExtension = useMemo(
+    () => EditorView.theme({
+      '.cm-content, .cm-gutter': { fontSize: `${fontSize}px` },
+      '.cm-scroller': { fontSize: `${fontSize}px` },
+    }),
+    [fontSize],
+  );
+
   const extensions = useMemo(() => {
     const allExtensions: Extension[] = [
       ...getLanguageExtensions(file.name),
       ...toolbarPanelExtension,
+      fontSizeExtension,
     ];
 
     if (file.diffInfo && showDiff && file.diffInfo.old_string !== undefined) {
@@ -170,6 +179,7 @@ export default function CodeEditor({
   }, [
     file.diffInfo,
     file.name,
+    fontSizeExtension,
     minimapExtension,
     scrollToFirstChunkExtension,
     showDiff,
