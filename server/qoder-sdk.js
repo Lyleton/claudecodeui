@@ -12,6 +12,7 @@ import { promises as fs } from 'fs';
 
 import { query, qodercliAuth, accessTokenFromEnv } from '@qoder-ai/qoder-agent-sdk';
 
+import { buildClaudeUserContent, normalizeImageDescriptors } from './shared/image-attachments.js';
 import { QODER_FALLBACK_MODELS } from './modules/providers/list/qoder/qoder-models.provider.js';
 import { providerModelsService } from './modules/providers/services/provider-models.service.js';
 import {
@@ -218,6 +219,25 @@ function extractTokenBudget(sdkMessage) {
   };
 }
 
+async function buildPromptPayload(command, images, cwd) {
+  if (normalizeImageDescriptors(images).length === 0) {
+    return command;
+  }
+
+  const content = await buildClaudeUserContent(command, images, cwd);
+  return (async function* () {
+    yield {
+      type: 'user',
+      message: {
+        role: 'user',
+        content,
+      },
+      parent_tool_use_id: null,
+      timestamp: new Date().toISOString(),
+    };
+  })();
+}
+
 /**
  * Main query function dispatched by the WebSocket chat handler.
  * @param {string} command - User prompt
@@ -313,8 +333,10 @@ async function queryQoderSDK(command, options = {}, ws) {
       return { behavior: 'deny', message: decision.message ?? 'User denied tool use' };
     };
 
+    const promptPayload = await buildPromptPayload(command, options.images, options.cwd);
+
     const queryInstance = query({
-      prompt: command,
+      prompt: promptPayload,
       options: sdkOptions,
     });
 
