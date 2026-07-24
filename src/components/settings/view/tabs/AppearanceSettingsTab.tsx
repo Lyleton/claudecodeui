@@ -109,6 +109,13 @@ export default function AppearanceSettingsTab({
               onChange={(event) => onCodeEditorFontSizeChange(event.target.value)}
               className="w-full rounded-lg border border-input bg-card p-2.5 text-sm text-foreground touch-manipulation focus:border-primary focus:ring-1 focus:ring-primary sm:w-28"
             >
+              <option value="3">3px</option>
+              <option value="4">4px</option>
+              <option value="5">5px</option>
+              <option value="6">6px</option>
+              <option value="7">7px</option>
+              <option value="8">8px</option>
+              <option value="9">9px</option>
               <option value="10">10px</option>
               <option value="11">11px</option>
               <option value="12">12px</option>
