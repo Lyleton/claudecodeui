@@ -149,6 +149,7 @@ const CodeBlock = ({ node, inline, className, children, ...props }: CodeBlockPro
           style: {
             fontFamily:
               'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+            fontSize: `${fontSize}px`,
             ...(isDarkMode ? {} : { background: 'transparent' }),
           },
         }}
