@@ -75,6 +75,16 @@ const PROVIDER_CAPABILITIES: Record<LLMProvider, ProviderCapabilities> = {
     supportsTokenUsage: true,
     supportsEffort: true,
   },
+  qoder: {
+    provider: 'qoder',
+    permissionModes: ['default', 'auto', 'acceptEdits', 'bypassPermissions', 'plan'],
+    defaultPermissionMode: 'default',
+    supportsImages: true,
+    supportsAbort: true,
+    supportsPermissionRequests: true,
+    supportsTokenUsage: true,
+    supportsEffort: true,
+  },
 };
 
 /**

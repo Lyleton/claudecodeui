@@ -626,7 +626,9 @@ export function useChatComposerState({
           ? codexModel
           : provider === 'opencode'
             ? opencodeModel
-            : claudeModel;
+            : provider === 'qoder'
+              ? qoderModel
+              : claudeModel;
 
     return {
       model,
@@ -642,6 +644,7 @@ export function useChatComposerState({
     currentProviderEffort,
     cursorModel,
     opencodeModel,
+    qoderModel,
     permissionMode,
     provider,
     resolvePermissionModeForProvider,
