@@ -89,6 +89,21 @@ export class QoderSessionsProvider implements IProviderSessions {
       return [];
     }
 
+    // Qoder SDK streaming format: { type: 'stream_event', event: { delta: {...} } }
+    if (raw.type === 'stream_event' && raw.event?.delta) {
+      const delta = raw.event.delta;
+      if (delta.type === 'text_delta' && delta.text) {
+        return [createNormalizedMessage({ kind: 'stream_delta', content: delta.text, sessionId, provider: PROVIDER })];
+      }
+      if (delta.type === 'thinking_delta' && delta.thinking) {
+        return [createNormalizedMessage({ kind: 'thinking', content: delta.thinking, sessionId, provider: PROVIDER })];
+      }
+      if (delta.type === 'input_json_delta' && delta.partial_json) {
+        return [createNormalizedMessage({ kind: 'stream_delta', content: delta.partial_json, sessionId, provider: PROVIDER })];
+      }
+      return [];
+    }
+
     if (raw.type === 'content_block_delta' && raw.delta?.text) {
       return [createNormalizedMessage({ kind: 'stream_delta', content: raw.delta.text, sessionId, provider: PROVIDER })];
     }
