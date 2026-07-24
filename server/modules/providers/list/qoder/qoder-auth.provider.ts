@@ -67,25 +67,12 @@ export class QoderProviderAuth implements IProviderAuth {
     }
 
     try {
-      const credPath = path.join(getQoderHome(), 'credentials.json');
-      const content = await readFile(credPath, 'utf8');
-      const creds = readObjectRecord(JSON.parse(content)) ?? {};
-      const accessToken = readOptionalString(creds.accessToken);
+      const authDir = path.join(getQoderHome(), '.auth');
+      const userFile = path.join(authDir, 'user');
+      const content = await readFile(userFile, 'utf8');
 
-      if (accessToken) {
-        const expiresAt = typeof creds.expiresAt === 'number' ? creds.expiresAt : undefined;
-        const email = readOptionalString(creds.email) ?? readOptionalString(creds.user) ?? null;
-
-        if (!expiresAt || Date.now() < expiresAt) {
-          return { authenticated: true, email, method: 'credentials_file' };
-        }
-
-        return {
-          authenticated: false,
-          email: null,
-          method: null,
-          error: 'Qoder login has expired. Run qodercli auth login again.',
-        };
+      if (content.trim()) {
+        return { authenticated: true, email: 'Authenticated', method: 'credentials_file' };
       }
 
       return {
