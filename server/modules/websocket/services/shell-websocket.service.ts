@@ -153,6 +153,16 @@ function buildShellCommand(
     return initialCommand || 'opencode';
   }
 
+  if (provider === 'qoder') {
+    if (resumeSessionId) {
+      if (os.platform() === 'win32') {
+        return `qodercli --resume "${resumeSessionId}"; if ($LASTEXITCODE -ne 0) { qodercli }`;
+      }
+      return `qodercli --resume "${resumeSessionId}" || qodercli`;
+    }
+    return initialCommand || 'qodercli';
+  }
+
   const command = initialCommand || 'claude';
   if (resumeSessionId) {
     if (os.platform() === 'win32') {
