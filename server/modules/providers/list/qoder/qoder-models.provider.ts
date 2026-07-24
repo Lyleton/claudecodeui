@@ -5,6 +5,7 @@ import type { IProviderModels } from '@/shared/interfaces.js';
 import type {
   ProviderChangeActiveModelInput,
   ProviderCurrentActiveModel,
+  ProviderModelOption,
   ProviderModelsDefinition,
   ProviderSessionActiveModelChange,
 } from '@/shared/types.js';
@@ -18,27 +19,19 @@ export const QODER_FALLBACK_MODELS: ProviderModelsDefinition = {
     {
       value: 'auto',
       label: 'Auto (recommended)',
-      description: 'Automatically select the best model for each task',
-      effort: {
-        default: 'high',
-        values: [
-          { value: 'low' },
-          { value: 'medium' },
-          { value: 'high' },
-          { value: 'max' },
-        ],
-      },
+      description: 'Vision · 1.00x Credit',
     },
     {
       value: 'ultimate',
       label: 'Ultimate',
-      description: 'Most capable model for the hardest tasks',
+      description: 'Reasoning · Vision · 0.80x Credit',
       effort: {
         default: 'high',
         values: [
           { value: 'low' },
           { value: 'medium' },
           { value: 'high' },
+          { value: 'xhigh' },
           { value: 'max' },
         ],
       },
@@ -46,13 +39,14 @@ export const QODER_FALLBACK_MODELS: ProviderModelsDefinition = {
     {
       value: 'performance',
       label: 'Performance',
-      description: 'Best balance of speed and capability for everyday tasks',
+      description: 'Vision · 1.10x Credit',
       effort: {
-        default: 'high',
+        default: 'medium',
         values: [
           { value: 'low' },
           { value: 'medium' },
           { value: 'high' },
+          { value: 'xhigh' },
           { value: 'max' },
         ],
       },
@@ -60,23 +54,139 @@ export const QODER_FALLBACK_MODELS: ProviderModelsDefinition = {
     {
       value: 'efficient',
       label: 'Efficient',
-      description: 'Fast responses with lower credit usage',
+      description: 'Vision · 0.30x Credit',
+    },
+    {
+      value: 'lite',
+      label: 'Lite',
+      description: '0.00x Credit',
+    },
+    {
+      value: 'cmodel',
+      label: 'Cantus',
+      description: 'Reasoning · Vision · 1.60x Credit',
       effort: {
         default: 'high',
         values: [
           { value: 'low' },
           { value: 'medium' },
           { value: 'high' },
+          { value: 'xhigh' },
+          { value: 'max' },
         ],
       },
     },
     {
-      value: 'lite',
-      label: 'Lite',
-      description: 'Fastest model for quick answers and simple tasks',
+      value: 'qmodel_preview',
+      label: 'Qwen3.8-Max-Preview',
+      description: 'Reasoning · Vision · 0.05x Credit',
+    },
+    {
+      value: 'qmodel_latest',
+      label: 'Qwen3.7-Max',
+      description: 'Vision · 0.25x Credit',
+    },
+    {
+      value: 'qmodel',
+      label: 'Qwen3.7-Plus',
+      description: 'Vision · 0.10x Credit',
+    },
+    {
+      value: 'kmodel_latest',
+      label: 'Kimi-K3',
+      description: 'Vision · 0.80x Credit',
+      effort: {
+        default: 'max',
+        values: [
+          { value: 'low' },
+          { value: 'high' },
+          { value: 'max' },
+        ],
+      },
+    },
+    {
+      value: 'kmodel',
+      label: 'Kimi-K2.7-Code',
+      description: 'Vision · 0.30x Credit',
+    },
+    {
+      value: 'gm51model',
+      label: 'GLM-5.2',
+      description: 'Reasoning · Vision · 0.60x Credit',
+      effort: {
+        default: 'max',
+        values: [
+          { value: 'high' },
+          { value: 'max' },
+        ],
+      },
+    },
+    {
+      value: 'dmodel',
+      label: 'DeepSeek-V4-Pro',
+      description: 'Reasoning · Vision · 0.50x Credit',
+      effort: {
+        default: 'max',
+        values: [
+          { value: 'high' },
+          { value: 'max' },
+        ],
+      },
+    },
+    {
+      value: 'dfmodel',
+      label: 'DeepSeek-V4-Flash',
+      description: 'Reasoning · Vision · 0.10x Credit',
+      effort: {
+        default: 'max',
+        values: [
+          { value: 'high' },
+          { value: 'max' },
+        ],
+      },
+    },
+    {
+      value: 'mmodel',
+      label: 'MiniMax-M3',
+      description: 'Vision · 0.20x Credit',
     },
   ],
   DEFAULT: 'auto',
+};
+
+type QoderSdkModelInfo = {
+  value: string;
+  displayName: string;
+  description?: string;
+  efforts?: string[];
+  defaultEffort?: string;
+  isDefault?: boolean;
+  isEnabled?: boolean;
+};
+
+const transformSdkModelsToDefinition = (models: QoderSdkModelInfo[]): ProviderModelsDefinition => {
+  const options: ProviderModelOption[] = models
+    .filter((m) => m.isEnabled !== false)
+    .map((m) => {
+      const option: ProviderModelOption = {
+        value: m.value,
+        label: m.displayName,
+        description: m.description,
+      };
+
+      if (m.efforts && m.efforts.length > 0) {
+        option.effort = {
+          default: m.defaultEffort || 'high',
+          values: m.efforts.map((e) => ({ value: e })),
+        };
+      }
+
+      return option;
+    });
+
+  const defaultModel = models.find((m) => m.isDefault)?.value || 'auto';
+
+  return { OPTIONS: options, DEFAULT: defaultModel };
 };
 
 type QoderInitEvent = {
@@ -131,6 +241,17 @@ const readQoderSessionModelFromJsonl = async (
 
 export class QoderProviderModels implements IProviderModels {
   async getSupportedModels(): Promise<ProviderModelsDefinition> {
+    try {
+      const { query, qodercliAuth } = await import('@qoder-ai/qoder-agent-sdk');
+      const q = query({ prompt: '', options: { auth: qodercliAuth() } });
+      const models = await q.getAvailableModels() as QoderSdkModelInfo[];
+      if (models && models.length > 0) {
+        return transformSdkModelsToDefinition(models);
+      }
+    } catch {
+      // Fall through to static fallback.
+    }
+
     return QODER_FALLBACK_MODELS;
   }
 
