@@ -10,6 +10,7 @@ import { normalizeInlineCodeFences } from '../../utils/chatFormatting';
 import { copyTextToClipboard } from '../../../../utils/clipboard';
 import { usePaletteOps } from '../../../../contexts/PaletteOpsContext';
 import { useTheme } from '../../../../contexts/ThemeContext';
+import { useCodeEditorSettings } from '../../../code-editor/hooks/useCodeEditorSettings';
 
 type MarkdownProps = {
   children: React.ReactNode;
@@ -61,6 +62,7 @@ type CodeBlockProps = {
 const CodeBlock = ({ node, inline, className, children, ...props }: CodeBlockProps) => {
   const { t } = useTranslation('chat');
   const { isDarkMode } = useTheme();
+  const { fontSize } = useCodeEditorSettings();
   const [copied, setCopied] = useState(false);
   const raw = Array.isArray(children) ? children.join('') : String(children ?? '');
   const looksMultiline = /[\r\n]/.test(raw);
@@ -138,7 +140,7 @@ const CodeBlock = ({ node, inline, className, children, ...props }: CodeBlockPro
         customStyle={{
           margin: 0,
           borderRadius: '0.75rem',
-          fontSize: '0.875rem',
+          fontSize: `${fontSize}px`,
           padding: language && language !== 'text' ? '2rem 1rem 1rem 1rem' : '1rem',
           // ChatGPT-style soft grey block in light mode; keep oneDark's own bg in dark.
           ...(isDarkMode ? {} : { background: 'hsl(var(--muted))' }),
