@@ -19,6 +19,7 @@ import {
 } from '../utils/mobileTerminalSelection';
 import { sendSocketMessage } from '../utils/socket';
 import { ensureXtermFocusStyles } from '../utils/terminalStyles';
+import { useCodeEditorSettings } from '../../code-editor/hooks/useCodeEditorSettings';
 
 // CLIs running inside the pty (e.g. `claude auth login`'s "press c to copy"
 // device-flow prompt) write to the clipboard via an OSC 52 escape sequence,
@@ -90,6 +91,10 @@ export function useShellTerminal({
   const selectedProjectKey = selectedProject?.fullPath || selectedProject?.path || '';
   const hasSelectedProject = Boolean(selectedProject);
 
+  const { fontSize } = useCodeEditorSettings();
+  const fontSizeRef = useRef(fontSize);
+  fontSizeRef.current = fontSize;
+
   useEffect(() => {
     ensureXtermFocusStyles();
   }, []);
@@ -124,7 +129,7 @@ export function useShellTerminal({
       return;
     }
 
-    const nextTerminal = new Terminal(TERMINAL_OPTIONS);
+    const nextTerminal = new Terminal({ ...TERMINAL_OPTIONS, fontSize: fontSizeRef.current });
     terminalRef.current = nextTerminal;
 
     const nextFitAddon = new FitAddon();
@@ -308,6 +313,28 @@ export function useShellTerminal({
     terminalRef,
     wsRef,
   ]);
+
+  // Keep the running terminal in sync with the code-editor font size setting
+  // without recreating it (which would clear scrollback and drop the socket).
+  useEffect(() => {
+    const terminal = terminalRef.current;
+    if (!terminal || terminal.options.fontSize === fontSize) {
+      return;
+    }
+
+    terminal.options.fontSize = fontSize;
+    const currentFitAddon = fitAddonRef.current;
+    if (currentFitAddon) {
+      currentFitAddon.fit();
+      sendSocketMessage(wsRef.current, {
+        type: 'resize',
+        cols: terminal.cols,
+        rows: terminal.rows,
+      });
+    } else {
+      terminal.refresh(0, terminal.rows - 1);
+    }
+  }, [fontSize, fitAddonRef, terminalRef, wsRef]);
 
   return {
     isInitialized,
