@@ -228,7 +228,7 @@ export function Markdown({ children, className }: MarkdownProps) {
         );
       },
     }),
-    [openFileInEditor],
+    [openFileInEditor, markdownComponents],
   );
 
   return (
