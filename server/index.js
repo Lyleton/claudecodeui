@@ -40,6 +40,12 @@ import {
     abortOpenCodeSession,
 } from './opencode-cli.js';
 import {
+    queryQoderSDK,
+    abortQoderSDKSession,
+    resolveQoderToolApproval,
+    getQoderPendingApprovalsForSession,
+} from './qoder-sdk.js';
+import {
     stripAnsiSequences,
     normalizeDetectedUrl,
     extractUrlsFromText,
@@ -114,15 +120,25 @@ const wss = createWebSocketServer(server, {
             cursor: spawnCursor,
             codex: queryCodex,
             opencode: spawnOpenCode,
+            qoder: queryQoderSDK,
         },
         abortFns: {
             claude: abortClaudeSDKSession,
             cursor: abortCursorSession,
             codex: abortCodexSession,
             opencode: abortOpenCodeSession,
+            qoder: abortQoderSDKSession,
         },
-        resolveToolApproval,
-        getPendingApprovalsForSession,
+        resolveToolApproval: (requestId, payload) => {
+            resolveToolApproval(requestId, payload);
+            resolveQoderToolApproval(requestId, payload);
+        },
+        getPendingApprovalsForSession: (providerSessionId) => {
+            return [
+                ...getPendingApprovalsForSession(providerSessionId),
+                ...getQoderPendingApprovalsForSession(providerSessionId),
+            ];
+        },
     },
     shell: {
         resolveProviderSessionId: (sessionId, provider) => {
